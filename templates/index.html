@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pàgina de receptes</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+    
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to right, #fdfcfb, #e2d1c3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+    
+        h3 {
+            margin-top: 30px;
+            font-size: 28px;
+            color: #4e342e;
+        }
+    
+        form {
+            background-color: #ffffffd9;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            width: 80%;
+            max-width: 600px;
+        }
+    
+        #form {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+        }
+    
+        #searchForm {
+            background: linear-gradient(135deg, #d3cce3 0%, #e9e4f0 100%);
+        }
+    
+        label {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #5d4037;
+        }
+    
+        input[type="text"], select {
+            margin-top: 5px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            width: 100%;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+    
+        input[type="text"]:focus, select:focus {
+            border-color: #f48fb1;
+            outline: none;
+        }
+    
+        button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: linear-gradient(to right, #ff9a9e, #fad0c4);
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            color: #4e342e;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+    
+        button:hover {
+            background: linear-gradient(to right, #fbc2eb, #a6c1ee);
+            transform: scale(1.05);
+        }
+    
+        .ingredients, .quantitats, .passos {
+            margin: 5px 0;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            width: 100%;
+        }
+    
+        .quantitats {
+            width: 30%;
+            margin-left: 10px;
+        }
+    
+        .ingredientsDiv {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            gap: 10px;
+        }
+    
+        #ingredients, #passos {
+            width: 100%;
+            margin-top: 10px;
+        }
+    
+        .recepta-container {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 15px 0;
+            width: 80%;
+            max-width: 700px;
+            box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+    
+        .recepta-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.15);
+        }
+    
+        .recepta-container strong {
+            font-size: 20px;
+            color: #6d4c41;
+        }
+    
+        .recepta-container em {
+            display: block;
+            margin-top: 10px;
+            color: #795548;
+            font-style: normal;
+            font-weight: bold;
+        }
+    
+        ul, ol {
+            margin: 10px 0 0 20px;
+            color: #4e342e;
+        }
+    
+        p {
+            color: #6d4c41;
+        }
+        #addIngredients, #addPassos, #addRecepta {
+            font-size: 14px;
+            margin: 10px 0; /* Margen solo arriba y abajo, nada a los lados */
+            width: auto;
+            background: linear-gradient(to right, #a7795b, #6f4e37); /* Tonos tierra */
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-block; /* Para que estén alineados al principio */
+            transition: background 0.3s ease, transform 0.2s ease;
+            text-align: center;
+        }
+
+        #addIngredients:hover, #addPassos:hover, #addRecepta:hover {
+            background: linear-gradient(to right, #8c5e3c, #5c3d2e);
+            transform: scale(1.03);
+        }
+
+
+
+        @media (max-width: 600px) {
+            form, .recepta-container {
+                width: 90%;
+            }
+    
+            .ingredientsDiv {
+                flex-direction: column;
+            }
+    
+            .quantitats {
+                width: 100%;
+                margin-left: 0;
+            }
+        }
+    </style>
+    
+    
+</head>
+<body>
+
+    <!-- 🔍 FORMULARI DE CERCA -->
+    <h3>🔍 Cerca una recepta:</h3>
+    <form method="get" id="searchForm">
+        <label for="tipus">Filtrar per tipus:</label>
+        <select name="tipus" id="tipus">
+            <option value="">Tots</option>
+            <option value="Primer Plat" {% if tipus_filtre == "Primer Plat" %}selected{% endif %}>Primer Plat</option>
+            <option value="Segon Plat" {% if tipus_filtre == "Segon Plat" %}selected{% endif %}>Segon Plat</option>
+            <option value="Postres" {% if tipus_filtre == "Postres" %}selected{% endif %}>Postres</option>
+        </select>
+
+        <label for="nom">Buscar recepta:</label>
+        <input type="text" name="nom" id="nom" value="{{ nom_buscat }}">
+
+        <button type="submit">Cercar</button>
+    </form>
+
+    <!-- 📋 Llista de receptes -->
+    <h3>🍽️ Receptes Disponibles</h3>
+    {% if receptes %}
+        {% for recepta in receptes %}
+            <div class="recepta-container">
+                <strong>{{ recepta['nom'] }}</strong> ({{ recepta['tipus'] }})<br>
+                <em>Ingredients:</em>
+                <ul>
+                    {% for ing in recepta['ingredients'] %}
+                        <li>{{ ing['ingredient'] }} - {{ ing['quantitat'] }}</li>
+                    {% endfor %}
+                </ul>
+                <em>Passos:</em>
+                <ol>
+                    {% for pas in recepta['passos'] %}
+                        <li>{{ pas }}</li>
+                    {% endfor %}
+                </ol>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No s'han trobat receptes.</p>
+    {% endif %}
+
+    <!-- ➕ FORMULARI PER AFEGIR RECEPTA -->
+    <h3>➕ Afegir recepta:</h3>
+    <form method="post" id="form">
+        <input type="text" id="recepta" name="nom_recepta" placeholder="Nom de la recepta" required>
+
+        <div id="ingredientsForm">
+            <div id="ingredients">
+                <div class="ingredientsDiv">
+                    <input type="text" class="ingredients" name="ing_recepta" placeholder="Ingredients" required>
+                    <input type="text" class="quantitats" name="quant_recepta" placeholder="20G" required>
+                </div>
+            </div>
+            <button type="button" id="addIngredients">+</button>
+        </div>
+
+        <div id="passosDiv">
+            <div id="passos">
+                <input type="text" class="passos" name="pas_recepta" placeholder="Pas a seguir" required>
+            </div>
+            <button type="button" id="addPassos">+</button>
+        </div>
+
+        <label for="tipus">Tipus:</label>
+        <select name="tipus" id="tipus" required>
+            <option value="Primer Plat">Primer Plat</option>
+            <option value="Segon Plat">Segon Plat</option>
+            <option value="Postres">Postres</option>
+        </select>
+
+        <button type="submit" id="addRecepta">Afegir recepta</button>
+    </form>
+
+    <script>
+        document.getElementById('addIngredients').addEventListener('click', function() {
+            var ingredients = document.getElementById('ingredients');
+            var ingredientsDiv = document.createElement('div');
+            ingredientsDiv.className = 'ingredientsDiv';
+
+            var newIngredient = document.createElement('input');
+            newIngredient.type = 'text';
+            newIngredient.name = 'ing_recepta';
+            newIngredient.placeholder = 'Ingredients';
+            newIngredient.className = 'ingredients';
+
+            var newQuantity = document.createElement('input');
+            newQuantity.type = 'text';
+            newQuantity.name = 'quant_recepta';
+            newQuantity.placeholder = '20G';
+            newQuantity.className = 'quantitats';
+
+            ingredientsDiv.appendChild(newIngredient);
+            ingredientsDiv.appendChild(newQuantity);
+            ingredients.appendChild(ingredientsDiv);
+        });
+
+        document.getElementById('addPassos').addEventListener('click', function() {
+            var passos = document.getElementById('passos');
+            var newPasso = document.createElement('input');
+            newPasso.type = 'text';
+            newPasso.name = 'pas_recepta';
+            newPasso.placeholder = 'Pas a seguir';
+            newPasso.className = 'passos';
+            newPasso.style.fontSize = '16px';
+
+            passos.appendChild(newPasso);
+        });
+    </script>
+
+</body>
+</html>
