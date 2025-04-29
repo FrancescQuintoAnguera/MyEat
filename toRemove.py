@@ -1,7 +1,3 @@
-from flask import Flask, render_template, request
-from pymongo import MongoClient
-
-main = Flask(__name__)
 #Classes
 class Recepta:
     def __init__(self, nom, ingredients, passos, tipus):
@@ -80,8 +76,4 @@ def index():
             receptes.append(nova_recepta.to_dict())
             desar_receptes(receptes)  
 
-    return render_template('login.html', receptes=receptes, tipus_filtre=tipus_filtre,nom_buscat=nom_buscat)
-
-
-if __name__ == '__main__':
-    main.run(port=5000, debug="True")
+    return render_template('index.html', receptes=receptes, tipus_filtre=tipus_filtre,nom_buscat=nom_buscat)
