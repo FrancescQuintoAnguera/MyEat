@@ -22,9 +22,25 @@ def singIn():
         sclient.rollback()
         return f"Error to sig-in: {str(e)}"
 
+@app.route('/login', methods=['POST'])
+def login():
+    email = request.form['email']
+    password = request.form['password']
+    try:
+        with sclient.cursor() as cursor:
+            sql = "SELECT * FROM usuaris WHERE email = %s AND pass = %s"
+            cursor.execute(sql, (email, password))
+            result = cursor.fetchone()
+            if result:
+                return render_template("index.html")
+            else:
+                return "Invalid credentials"
+    except Exception as e:
+        return f"Error to login: {str(e)}"
+
 @app.route("/")
 def form():
-    return render_template("singin.html")
+    return render_template("login.html")
 
 if __name__ == '__main__':
     app.run(port=5000, debug="True")
