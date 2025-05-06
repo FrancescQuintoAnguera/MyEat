@@ -1,0 +1,12 @@
+# Ignored folders
+bin/
+env/
+lib/
+lib64/
+__pycache__/
+include/
+
+# Ignored archives
+pyvenv.cfg
+keys.py
+
