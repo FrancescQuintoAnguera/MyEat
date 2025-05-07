@@ -19,12 +19,21 @@
                 
                 <input type="text" name="password" placeholder="Contrasenya" required>
 
-                <input type="submit" value="Log-In">
+                <input type="submit" value="Iniciar Sessió">
             </form>
+            <div>
+                <button onclick="window.location.href='/singin'">Registrar-me</button>
+            </div>
         </div>
     </main>
     <footer>
 
     </footer>
+    <script>
+        const error = "{{ error }}";
+        if (error) {
+            alert(error); 
+        }
+    </script>
 </body>
 </html>

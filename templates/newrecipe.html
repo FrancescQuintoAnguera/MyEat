@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="/static/app.js"></script>
+</head>
+<body>
+    <main>
+        <form method="POST" id="form">
+            <input type="text" name="name" placeholder="Nom de la recepta" required>
+    
+            <div id="ingredientsForm">
+                <div id="ingredients">
+                    <div class="ingredientsDiv">
+                        <input type="text" name="ingredients" placeholder="Ingredients" required>
+                        <input type="text" name="grams" placeholder="20G" required>
+                    </div>
+                </div>
+                <button type="button" id="addIngredients" onclick="addIngredient()">+</button>
+            </div>
+    
+            <div id="passosDiv">
+                <div id="passos">
+                    <input type="text" class="passos" name="steps" placeholder="Pas a seguir" required>
+            </div>
+    
+            <label for="tipus">Tipus:</label>
+            <select name="type" id="tipus" required>
+                <option value="PrimerPlat">Primer Plat</option>
+                <option value="SegonPlat">Segon Plat</option>
+                <option value="Postres">Postres</option>
+            </select>
+    
+            <button type="submit" id="addRecepta">Afegir recepta</button>
+        </form>
+    </main>
+    <script>
+        const error = "{{ error }}";
+        if (error) {
+            alert(error); 
+        }
+    </script>
+</body>
+</html>

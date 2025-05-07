@@ -9,81 +9,16 @@
 
 </head>
 <body>
+    <button onclick="window.location.href='/newrecipe'"></button>
+    
+    
+    <!-- 
+        Fer els buscador
 
-    <!-- 🔍 FORMULARI DE CERCA -->
-    <h3>🔍 Cerca una recepta:</h3>
-    <form method="get" id="searchForm">
-        <label for="tipus">Filtrar per tipus:</label>
-        <select name="tipus" id="tipus">
-            <option value="">Tots</option>
-            <option value="Primer Plat" {% if tipus_filtre == "Primer Plat" %}selected{% endif %}>Primer Plat</option>
-            <option value="Segon Plat" {% if tipus_filtre == "Segon Plat" %}selected{% endif %}>Segon Plat</option>
-            <option value="Postres" {% if tipus_filtre == "Postres" %}selected{% endif %}>Postres</option>
-        </select>
+        Poder mostrar les receptes
 
-        <label for="nom">Buscar recepta:</label>
-        <input type="text" name="nom" id="nom" value="{{ nom_buscat }}">
-
-        <button type="submit">Cercar</button>
-    </form>
-
-    <!-- 📋 Llista de receptes -->
-    <h3>🍽️ Receptes Disponibles</h3>
-    {% if receptes %}
-        {% for recepta in receptes %}
-            <div class="recepta-container">
-                <strong>{{ recepta['nom'] }}</strong> ({{ recepta['tipus'] }})<br>
-                <em>Ingredients:</em>
-                <ul>
-                    {% for ing in recepta['ingredients'] %}
-                        <li>{{ ing['ingredient'] }} - {{ ing['quantitat'] }}</li>
-                    {% endfor %}
-                </ul>
-                <em>Passos:</em>
-                <ol>
-                    {% for pas in recepta['passos'] %}
-                        <li>{{ pas }}</li>
-                    {% endfor %}
-                </ol>
-            </div>
-        {% endfor %}
-    {% else %}
-        <p>No s'han trobat receptes.</p>
-    {% endif %}
-
-    <!-- ➕ FORMULARI PER AFEGIR RECEPTA -->
-    <h3>➕ Afegir recepta:</h3>
-    <form method="post" id="form">
-        <input type="text" id="recepta" name="nom_recepta" placeholder="Nom de la recepta" required>
-
-        <div id="ingredientsForm">
-            <div id="ingredients">
-                <div class="ingredientsDiv">
-                    <input type="text" class="ingredients" name="ing_recepta" placeholder="Ingredients" required>
-                    <input type="text" class="quantitats" name="quant_recepta" placeholder="20G" required>
-                </div>
-            </div>
-            <button type="button" id="addIngredients">+</button>
-        </div>
-
-        <div id="passosDiv">
-            <div id="passos">
-                <input type="text" class="passos" name="pas_recepta" placeholder="Pas a seguir" required>
-            </div>
-            <button type="button" id="addPassos">+</button>
-        </div>
-
-        <label for="tipus">Tipus:</label>
-        <select name="tipus" id="tipus" required>
-            <option value="Primer Plat">Primer Plat</option>
-            <option value="Segon Plat">Segon Plat</option>
-            <option value="Postres">Postres</option>
-        </select>
-
-        <button type="submit" id="addRecepta">Afegir recepta</button>
-    </form>
-
-    <script src="/static/app.js"></script>
+        
+        -->
 
 </body>
 </html>
