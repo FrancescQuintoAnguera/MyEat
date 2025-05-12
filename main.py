@@ -71,29 +71,53 @@ def index():
 @app.route("/newrecipe", methods=['GET','POST'])
 def newrecipe():
     if request.method == 'GET':
-        return render_template("newrecipe.html")
+
+        try:
+            with sclient.cursor() as cursor:
+                sql = "SELECT id, nom FROM ingredients"
+                cursor.execute(sql)
+                ingredients = cursor.fetchall()
+
+            return render_template("newrecipe.html", ingredients=ingredients)
+           
+        except Exception as e:
+            return f"Error as load: {str(e)}"
     
     elif request.method == 'POST':
+
         name = request.form['name']
         steps = request.form['steps']
         type = request.form['type']
         author_id = session.get('id')
+        weight = request.form['weight']
+        selectedIngredinets = request.form.getlist('ingredients')
         
         if not author_id:
             return render_template("login.html", error="Inicia la sessió per afegir una recepta")
         
         try:
             with sclient.cursor() as cursor:
-                print("entran al cusor")
+                
                 sql = """
                     INSERT INTO receptes (titol, tipus, pasos, autor_id)
                     VALUES (%s, %s, %s, %s)
-            """
+                """
                 cursor.execute(sql,(name, type ,steps, author_id))
-                
+                recipe_id = cursor.lastrowid
+
+                manyToMany = """
+                    INSERT INTO recepta_ingredients (recepta_id, ingredient_id, pes)
+                    VALUES (%s, %s, %s)
+                """
+
+                for ingredient_id in selectedIngredinets:
+                    cursor.execute(manyToMany,(recipe_id, ingredient_id, weight))
+
             sclient.commit()
-            
+            return render_template("index.html", message="Recepta afegida correctament!")
+        
         except Exception as e:
+            sclient.rollback()
             return f"Error to login: {str(e)}"
 
 

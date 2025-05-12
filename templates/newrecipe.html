@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <script src="/static/app.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 </head>
 <body>
     <main>
@@ -13,10 +14,14 @@
     
             <div id="ingredientsForm">
                 <div id="ingredients">
-                    <div class="ingredientsDiv">
-                        <input type="text" name="ingredients" placeholder="Ingredients" required>
-                        <input type="text" name="grams" placeholder="20G" required>
-                    </div>
+                    <select name="ingredients" id="ingredients"  required>
+                        {% for ingredient in ingredients %}
+                            <option value="{{ ingredient[0] }}">{{ ingredient[1] }}</option>
+                        {% endfor %}
+                    </select>
+                
+                    <input type="text" name="weight" placeholder="20G" required>
+                
                 </div>
                 <button type="button" id="addIngredients" onclick="addIngredient()">+</button>
             </div>
@@ -41,6 +46,22 @@
         if (error) {
             alert(error); 
         }
+        function addIngredient() {
+            const ingredientsDiv = document.getElementById("ingredients");
+            const newIngredientDiv = document.createElement("div");
+            newIngredientDiv.classList.add("ingredientsDiv");
+            newIngredientDiv.innerHTML = `
+
+            <select name="ingredients" id="ingredients"  required>
+                {% for ingredient in ingredients %}
+                        <option value="{{ ingredient[0] }}">{{ ingredient[1] }}</option>
+                {% endfor %}
+            </select>
+            <input type="text" class="quantitats" name="quant_recepta" placeholder="20G" required>
+            `;
+            ingredientsDiv.appendChild(newIngredientDiv);
+        }
+        
     </script>
 </body>
 </html>
