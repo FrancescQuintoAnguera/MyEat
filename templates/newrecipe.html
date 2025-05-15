@@ -9,12 +9,12 @@
 </head>
 <body>
     <main>
-        <form method="POST" id="form">
+        <form method="POST" id="form" enctype="multipart/form-data">
             <input type="text" name="name" placeholder="Nom de la recepta" required>
     
             <div id="ingredientsForm">
                 <div id="ingredients">
-                    <select name="ingredients" id="ingredients"  required>
+                    <select name="ingredients" id="ingredients" required>
                         {% for ingredient in ingredients %}
                             <option value="{{ ingredient[0] }}">{{ ingredient[1] }}</option>
                         {% endfor %}
@@ -37,6 +37,9 @@
                 <option value="SegonPlat">Segon Plat</option>
                 <option value="Postres">Postres</option>
             </select>
+
+            <label for="image">Selecciona una imatge:</label>
+            <input type="file" id="image" name="image" accept="image/*">
     
             <button type="submit" id="addRecepta">Afegir recepta</button>
         </form>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Recepta</title>
+</head>
+<body>
+    <h1>Editar Recepta</h1>
+    <form method="POST" enctype="multipart/form-data">
+        <label for="title">Títol:</label>
+        <input type="text" id="title" name="title" value="{{ recipe[0] }}" required>
+
+        <label for="type">Tipus:</label>
+        <input type="text" id="type" name="type" value="{{ recipe[1] }}" required>
+
+        <label for="steps">Pasos:</label>
+        <textarea id="steps" name="steps" rows="5" required>{{ recipe[2] }}</textarea>
+
+        <label for="image">Selecciona una nova imatge (opcional):</label>
+        <input type="file" id="image" name="image" accept="image/*">
+
+        <label for="changes">Descripció dels canvis:</label>
+        <textarea id="changes" name="changes" rows="3" required></textarea>
+
+        <button type="submit">Guardar canvis</button>
+    </form>
+</body>
+</html>
