@@ -1,48 +1,55 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-</head>
-<body>
-    <main>
-        <form method="POST" id="form" enctype="multipart/form-data">
-            <input type="text" name="name" placeholder="Nom de la recepta" required>
-    
-            <div id="ingredientsForm">
-                <div id="ingredients">
-                    <select name="ingredients" id="ingredients" required>
-                        {% for ingredient in ingredients %}
-                            <option value="{{ ingredient[0] }}">{{ ingredient[1] }}</option>
-                        {% endfor %}
-                    </select>
-                
-                    <input type="text" name="weight" placeholder="20G" required>
-                
-                </div>
-                <button type="button" id="addIngredients" onclick="addIngredient()">+</button>
-            </div>
-    
-            <div id="passosDiv">
-                <div id="passos">
-                    <input type="text" class="passos" name="steps" placeholder="Pas a seguir" required>
-            </div>
-    
-            <label for="tipus">Tipus:</label>
-            <select name="type" id="tipus" required>
-                <option value="PrimerPlat">Primer Plat</option>
-                <option value="SegonPlat">Segon Plat</option>
-                <option value="Postres">Postres</option>
-            </select>
+{% extends "base.html" %}
 
-            <label for="image">Selecciona una imatge:</label>
-            <input type="file" id="image" name="image" accept="image/*">
-    
-            <button type="submit" id="addRecepta">Afegir recepta</button>
-        </form>
+{% block title %} Nova recepta {% endblock%}
+
+{% block content %}
+    <main>
+        <div class="    ">
+            <h1>Nova recepta</h1>
+            <form method="POST" id="form" enctype="multipart/form-data">
+                <h3>Titul</h3>
+                <br>
+                <input type="text" name="name" placeholder="Nom de la recepta" required>
+                <br>
+                <br>
+                <h3>Ingredients</h3>
+                <br>
+                <div id="ingredientsForm">
+                    <div id="ingredients">
+                        <select name="ingredients" id="addRecepta" required>
+                            {% for ingredient in ingredients %}
+                                <option value="{{ ingredient[0] }}">{{ ingredient[1] }}</option>
+                            {% endfor %}
+                        </select>
+                    
+                        <input type="text" name="weight" placeholder="20G" required>
+                    
+                    </div>
+                    <br>
+                    <button type="button" id="addRecepta" onclick="addIngredient()">+</button>
+                </div>
+                <br>
+                <h3>Passos</h3>
+                <div id="passosDiv">
+                    <div id="passos">
+                        <input type="text-area" class="passos" name="steps" placeholder="Pas a seguir" required>
+                </div>
+                <br>
+        
+                <h3>Tipus</h3>
+                <select name="type" id="addRecepta" required>
+                    <option value="PrimerPlat">Primer Plat</option>
+                    <option value="SegonPlat">Segon Plat</option>
+                    <option value="Postres">Postres</option>
+                </select>
+                <br>
+
+                <h3>Insereix una imatge</h3>
+                <input type="file" id="addRecepta" name="image" accept="image/*">
+                <br><br>
+                <button type="submit" id="addRecepta">Afegir recepta</button>
+            </form>
+        </div>
     </main>
     <script>
         const error = "{{ error }}";
@@ -54,17 +61,16 @@
             const newIngredientDiv = document.createElement("div");
             newIngredientDiv.classList.add("ingredientsDiv");
             newIngredientDiv.innerHTML = `
-
-            <select name="ingredients" id="ingredients"  required>
+            <br>
+            <select name="ingredients" id="addRecepta"  required>
                 {% for ingredient in ingredients %}
                         <option value="{{ ingredient[0] }}">{{ ingredient[1] }}</option>
                 {% endfor %}
             </select>
             <input type="text" class="quantitats" name="quant_recepta" placeholder="20G" required>
+            <br>
             `;
             ingredientsDiv.appendChild(newIngredientDiv);
         }
-        
     </script>
-</body>
-</html>
+{% endblock %}

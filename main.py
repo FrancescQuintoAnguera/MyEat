@@ -1,4 +1,5 @@
 from flask import Flask, request, render_template, session, redirect
+from bson.objectid import ObjectId
 from datetime import datetime
 from databases import *
 from keys import *
@@ -17,6 +18,11 @@ fs = GridFS(mongo_db)
 #SQL
 @app.route('/')
 def root():
+    return redirect('/login')
+
+@app.route('/logout')
+def logout():
+    session.clear()
     return redirect('/login')
 
 @app.route('/singin', methods=['GET','POST'])
@@ -75,6 +81,9 @@ def login():
 
 @app.route("/newrecipe", methods=['GET', 'POST'])
 def newrecipe():
+    if 'id' not in session:
+        return redirect('/login')
+    
     if request.method == 'GET':
         try:
             with sclient.cursor() as cursor:
@@ -166,6 +175,26 @@ def index():
         ratings_collection = mongo_db["ratings"]
         images_collection = mongo_db["receptes_images"]
 
+        # Si es una solicitud POST, guarda el comentario en MongoDB
+        if request.method == 'POST':
+            recepta_id = request.form.get("recepta_id")
+            text = request.form.get("text")
+            usuari = session.get("name")  # Nombre del usuario desde la sesión
+            data_actual = datetime.now().strftime("%Y-%m-%d")  # Fecha actual
+
+            if recepta_id and text:
+                recepta = mongo_collection.find_one({"recepta_id": int(recepta_id)})
+                if recepta:
+                    mongo_collection.update_one(
+                        {"recepta_id": int(recepta_id)},
+                        {"$push": {"comentaris": {"usuari": usuari, "text": text, "data": data_actual}}}
+                    )
+                else:
+                    mongo_collection.insert_one({
+                        "recepta_id": int(recepta_id),
+                        "comentaris": [{"usuari": usuari, "text": text, "data": data_actual}]
+                    })
+
         # Obtén los comentarios, puntuaciones e imágenes desde MongoDB
         comments = list(mongo_collection.find())
         ratings = list(ratings_collection.find())
@@ -185,7 +214,17 @@ def index():
             recipe_image = next(
                 (img["image_id"] for img in images if img["recepta_id"] == recipe_id), None
             )
-            average_rating = round(sum(recipe_ratings) / len(recipe_ratings), 2) if recipe_ratings else "No hi ha puntuacions"
+
+            user_id = session['id']
+            user_has_rated = any(r["user_id"] == user_id for r in recipe_ratings)
+            # Calcula la puntuació mitjana
+            if recipe_ratings:
+                # Extreu només els valors de "rating" dels diccionaris
+                ratings_values = [r["rating"] for r in recipe_ratings]
+                average_rating = round(sum(ratings_values) / len(ratings_values), 2)
+            else:
+                average_rating = "No hi ha puntuacions"
+
             recipes_with_details.append({
                 "id": recipe_id,
                 "title": recipe[1],
@@ -196,7 +235,8 @@ def index():
                 "ingredients": recipe_ingredients,
                 "comments": recipe_comments,
                 "average_rating": average_rating,
-                "image_id": recipe_image  # Incluye el ID de la imagen
+                "image_id": recipe_image,
+                "user_has_rated": user_has_rated
             })
 
         return render_template("index.html", recipes=recipes_with_details)
@@ -289,12 +329,84 @@ def edit_recipe(recipe_id):
 @app.route("/image/<image_id>")
 def get_image(image_id):
     try:
-        # Convierte el image_id a ObjectId si es necesario
-        from bson.objectid import ObjectId
         image = fs.get(ObjectId(image_id))
         return app.response_class(image.read(), content_type=image.content_type)
     except Exception as e:
         return f"Error al carregar la imatge: {str(e)}", 404
+
+@app.route("/delete_recipe/<int:recipe_id>", methods=['POST'])
+def delete_recipe(recipe_id):
+    if 'id' not in session:
+        return redirect('/login')
+
+    try:
+        with sclient.cursor() as cursor:
+            # Verifica si el usuario es el creador de la receta
+            sql = "SELECT autor_id FROM receptes WHERE id = %s"
+            cursor.execute(sql, (recipe_id,))
+            result = cursor.fetchone()
+
+            if not result or result[0] != session['id']:
+                return "No tens permís per eliminar aquesta recepta", 403
+
+            # Elimina los ingredientes relacionados de la tabla intermedia
+            sql_delete_ingredients = "DELETE FROM recepta_ingredients WHERE recepta_id = %s"
+            cursor.execute(sql_delete_ingredients, (recipe_id,))
+
+            # Elimina la receta de MySQL
+            sql_delete_recipe = "DELETE FROM receptes WHERE id = %s"
+            cursor.execute(sql_delete_recipe, (recipe_id,))
+
+            # Elimina los comentarios relacionados de MongoDB
+            mongo_db["comentaris"].delete_one({"recepta_id": recipe_id})
+
+            # Elimina la imagen relacionada de MongoDB (GridFS)
+            image_doc = mongo_db["receptes_images"].find_one({"recepta_id": recipe_id})
+            if image_doc:
+                fs.delete(image_doc["image_id"])  # Elimina la imagen de GridFS
+                mongo_db["receptes_images"].delete_one({"recepta_id": recipe_id})
+
+            # Elimina el histórico de cambios de MongoDB
+            mongo_db["modificacions"].delete_one({"recepta_id": recipe_id})
+
+            sclient.commit()
+            return redirect("/index")
+
+    except Exception as e:
+        sclient.rollback()
+        return f"Error al eliminar la recepta: {str(e)}"
+
+@app.route("/rate_recipe/<int:recipe_id>", methods=['POST'])
+def rate_recipe(recipe_id):
+    if 'id' not in session:
+        return redirect('/login')
+
+    user_id = session['id']
+    rating = int(request.form.get("rating"))  # Obté la puntuació del formulari
+
+    try:
+        # Conexió a la col·lecció de puntuacions
+        ratings_collection = mongo_db["ratings"]
+
+        # Verifica si l'usuari ja ha puntuat aquesta recepta
+        existing_rating = ratings_collection.find_one({
+            "recepta_id": recipe_id,
+            "ratings.user_id": user_id
+        })
+
+        if existing_rating:
+            return redirect("/index")
+        # Si no ha puntuat, afegeix la puntuació
+        ratings_collection.update_one(
+            {"recepta_id": recipe_id},
+            {"$push": {"ratings": {"user_id": user_id, "rating": rating}}},
+            upsert=True
+        )
+
+        return redirect("/index")
+
+    except Exception as e:
+        return f"Error al puntuar la recepta: {str(e)}"
 
 if __name__ == '__main__':
     app.run(port=5000, debug="True")

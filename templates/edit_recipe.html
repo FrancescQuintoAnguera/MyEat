@@ -1,29 +1,25 @@
-<!DOCTYPE html>
-<html lang="ca">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Recepta</title>
-</head>
-<body>
-    <h1>Editar Recepta</h1>
-    <form method="POST" enctype="multipart/form-data">
-        <label for="title">Títol:</label>
-        <input type="text" id="title" name="title" value="{{ recipe[0] }}" required>
+{% extends "base.html" %}
 
-        <label for="type">Tipus:</label>
-        <input type="text" id="type" name="type" value="{{ recipe[1] }}" required>
+{% block title %} Editar Recepta {% endblock%}
 
-        <label for="steps">Pasos:</label>
-        <textarea id="steps" name="steps" rows="5" required>{{ recipe[2] }}</textarea>
+{% block content %}
+    <form class="newRecipe" method="POST" enctype="multipart/form-data">
+        <h1>Editar Recepta</h1><br>
+        <h3>Titol</h3><br>
+        <input type="text" id="title" name="title" value="{{ recipe[0] }}" required><br><br>
 
-        <label for="image">Selecciona una nova imatge (opcional):</label>
-        <input type="file" id="image" name="image" accept="image/*">
+        <h3>Tipus</h3><br>
+        <input type="text" id="type" name="type" value="{{ recipe[1] }}" required><br><br>
 
-        <label for="changes">Descripció dels canvis:</label>
-        <textarea id="changes" name="changes" rows="3" required></textarea>
+        <h3>Pasos</h3><br>
+        <textarea id="steps" name="steps" rows="5" required>{{ recipe[2] }}</textarea><br>
 
-        <button type="submit">Guardar canvis</button>
+        <h3>Nova Imatge (Opcional)</h3><br>
+        <input id="addRecepta" type="file" id="image" name="image" accept="image/*"><br><br>
+
+        <h3>Descripció</h3><br>
+        <textarea id="changes" name="changes" rows="3" required></textarea><br><br>
+
+        <button id="addRecepta" type="submit">Guardar canvis</button><br>
     </form>
-</body>
-</html>
+{% endblock%}

@@ -1,39 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyEat|Login</title>
-    <link rel="icon" href="/static/images/logo.png" type="image/x-icon">
-</head>
-<body>
-    <header>
+{% extends "baseforms.html" %}
 
-    </header>
+{% block title %} Login {% endblock%}
+
+{% block content %}
     <main>
-        <div class="log_sing_form">
-            <h2>Login Form</h2>
-            <form action="/login" method="POST">
+        <div class="log_sign_form">
+            <h1>Login Form</h1>
+            <form action="/login " method="POST">
 
-                <input type="email" name="email" placeholder="Correu Electronic" requierd>
+                <img src="/static/images/user.png" alt="email">
+                <input type="email" name="email" placeholder="Correu Electronic" requierd><br><br>
                 
-                <input type="text" name="password" placeholder="Contrasenya" required>
+                <img src="/static/images/password.png" alt="">
+                <input type="text" name="password" placeholder="Contrasenya" required><br><br>
 
-                <input type="submit" value="Iniciar Sessió">
+                <input id="button" type="submit" value="Iniciar Sessió">
             </form>
             <div>
-                <button onclick="window.location.href='/singin'">Registrar-me</button>
+                <button id="button" onclick="window.location.href='/singin'">Registrar-me</button>
             </div>
         </div>
     </main>
-    <footer>
-
-    </footer>
     <script>
         const error = "{{ error }}";
         if (error) {
             alert(error); 
         }
     </script>
-</body>
-</html>
+{% endblock%}

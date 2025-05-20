@@ -1,25 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyEat|Sing-In</title>
-    <link rel="icon" href="/static/images/logo.png" type="image/x-icon">
-</head>
-<body>
-    <header>
+{% extends "base.html" %}
 
-    </header>
+{% block title %} Registrar-me {% endblock%}
+
+{% block content %}
     <main>
-        <div class="log_sing_form">
-            <h2>Sing-In Form</h2>
+        <div class="log_sign_form">
+            <h1>Sign In Form</h1>
             <form action="/singin" method="POST">
                 
-                <input type="text" name="name" placeholder="Nom" required>
+                <img src="/static/images/user.png" alt="">
+                <input type="text" name="name" placeholder="Nom" required><br><br>
 
-                <input type="email" name="email" placeholder="Correu Electronic" requierd>
+                <img src="/static/images/email.png" alt="">
+                <input type="email" name="email" placeholder="Correu Electronic" requierd><br><br>
                 
-                <input type="text" name="password" placeholder="Contrasenya" required>
+                <img src="/static/images/password.png" alt="">
+                <input type="text" name="password" placeholder="Contrasenya" required><br><br>
 
                 <input type="submit" value="Registrar">
             </form>
@@ -28,8 +24,4 @@
             </div>
         </div>
     </main>
-    <footer>
-
-    </footer>
-</body>
-</html>
+{% endblock%}

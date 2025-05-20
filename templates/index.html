@@ -1,74 +1,83 @@
-<!DOCTYPE html>
-<html lang="ca">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pàgina de receptes</title>
-    <link rel="stylesheet" href="/static/style.css">
-    <link rel="icon" href="/static/images/logo.png" type="image/x-icon">
-</head>
-<body>
-    <button onclick="window.location.href='/newrecipe'">+</button>
+{% extends "base.html" %}
 
+{% block title %} Inici {% endblock%}
+
+{% block content %}
     <main>
         {% for recipe in recipes %}
-        <div>
+        <div class="recipe">
             <h1>{{ recipe.title }}</h1>
-            <h2>{{ recipe.type }}</h2>
-            {% if recipe.image_id %}
-            <img src="/image/{{ recipe.image_id }}" alt="Imatge de la recepta" style="max-width: 300px;">
-            {% endif %}
-            <h3>Ingredients</h3>
-            <ul>
-                {% for ingredient in recipe.ingredients %}
-                <li>{{ ingredient[1] }} {{ ingredient[2] }}G</li>
-                {% endfor %}
-            </ul>
-            <h3>Pasos</h3>
-            <p>{{ recipe.steps }}</p>
-            <p>Autor: {{ recipe.author }}</p>
-            <p>Puntuació mitjana: {{ recipe.average_rating }}</p>
+            <div class="content">
+                {% if recipe.image_id %}
+                <img src="/image/{{ recipe.image_id }}" alt="Imatge de la recepta">
+                {% endif %}
+                <div class="text">
+                    <h2>{{ recipe.type }}</h2>
+                    <h3>Ingredients</h3>
+                    <ul>
+                        {% for ingredient in recipe.ingredients %}
+                        <li>{{ ingredient[1] }} {{ ingredient[2] }}G</li>
+                        {% endfor %}
+                    </ul>
+                    <h3>Pasos</h3>
+                    <p>{{ recipe.steps }}</p>
+                    <h3>Autor</h3>
+                    <p>{{ recipe.author }}</p>
+                    <h3>Valoració</h3>
+                    <p>{{ recipe.average_rating }}</p>
 
-            <!-- Botón de edición visible solo para el creador -->
-            {% if session['id'] == recipe.author_id %}
-            <button onclick="window.location.href='/edit_recipe/{{ recipe.id }}'">Editar</button>
-            {% endif %}
+                    <!-- Formulario de votación -->
+                    {% if not recipe.user_has_rated %}
+                    <form action="/rate_recipe/{{ recipe.id }}" method="POST">
+                        <label for="rating">Puntua aquesta recepta:</label>
+                        <select name="rating" id="rating">
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                        </select>
+                        <button type="submit">Enviar puntuació</button>
+                    </form>
+                    {% endif %}
 
-            <!-- Formulario de votación -->
-            <form method="POST" action="/index" class="rating-form">
-                <input type="hidden" name="recepta_id" value="{{ recipe.id }}">
-                <label for="rating-{{ recipe.id }}">Puntua aquesta recepta:</label>
-                <select name="rating" id="rating-{{ recipe.id }}" required>
-                    <option value="" disabled selected>Selecciona una puntuació</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                </select>
-                <button type="submit">Enviar puntuació</button>
-            </form>
+                    <!-- Mostrar comentarios -->
+                    <div>
+                        <h4>Comentaris:</h4>
+                        <ul>
+                            {% for comment in recipe.comments %}
+                            <li>
+                                <strong>{{ comment.usuari }}</strong>: {{ comment.text }} ({{ comment.data }})
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
 
-            <!-- Mostrar comentarios -->
-            <div>
-                <h4>Comentaris:</h4>
-                <ul>
-                    {% for comment in recipe.comments %}
-                    <li>
-                        <strong>{{ comment.usuari }}</strong>: {{ comment.text }} ({{ comment.data }})
-                    </li>
-                    {% endfor %}
-                </ul>
+                    <!-- Formulario para agregar un comentario -->
+                    <form method="POST" action="/index">
+                        <input type="hidden" name="recepta_id" value="{{ recipe.id }}">
+                        <textarea name="text" placeholder="Escriu el teu comentari..." required></textarea>
+                        <br>
+                        <button type="submit">Enviar</button>
+                    </form>
+                </div>
+                <br>
             </div>
-
-            <!-- Formulario para agregar un comentario -->
-            <form method="POST" action="/index">
-                <input type="hidden" name="recepta_id" value="{{ recipe.id }}">
-                <textarea name="text" placeholder="Escriu el teu comentari..." required></textarea>
-                <button type="submit">Enviar</button>
+            {% if session['id'] == recipe.author_id %}
+            <div>
+                <form method="POST" action="/delete_recipe/{{ recipe.id }}">
+                <button type="submit" style="background-color: red; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer;">Eliminar Recepta</button>
             </form>
+            <button onclick="window.location.href='/edit_recipe/{{ recipe.id }}'" style="background-color: yellow; color: black; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer;">Editar</button>
+            </div>
+            {% endif %}
         </div>
         {% endfor %}
     </main>
-</body>
-</html>
+    <script>
+        const error = "{{ error }}";
+        if (error) {
+            alert(error); 
+        }
+    </script>
+{% endblock%}
