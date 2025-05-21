@@ -3,7 +3,6 @@ from bson.objectid import ObjectId
 from datetime import datetime
 from databases import *
 from keys import *
-from databases import mclient  # Importa la conexión a MongoDB desde databases.py
 from gridfs import GridFS
 from werkzeug.utils import secure_filename
 
@@ -11,11 +10,10 @@ app = Flask(__name__)
 
 app.secret_key = flask_pwd
 
-# Conexión a MongoDB y configuración de GridFS
 mongo_db = mclient["MyEat"]
 fs = GridFS(mongo_db)
 
-#SQL
+
 @app.route('/')
 def root():
     return redirect('/login')
@@ -36,7 +34,7 @@ def singIn():
         password = request.form['password']
         
         try:
-        
+
             with sclient.cursor() as cursor:
                 sql = """
                     INSERT INTO usuaris (nom, email, pass) VALUES (%s, %s, %s)
@@ -44,7 +42,7 @@ def singIn():
                 cursor.execute(sql, (name, email, password))
         
             sclient.commit()
-            return render_template("index.html")
+            return redirect("/login")
         
         except Exception as e:
             sclient.rollback()
@@ -79,6 +77,7 @@ def login():
         except Exception as e:
             return f"Error to login: {str(e)}"
 
+
 @app.route("/newrecipe", methods=['GET', 'POST'])
 def newrecipe():
     if 'id' not in session:
@@ -102,14 +101,14 @@ def newrecipe():
         author_id = session.get('id')
         weight = request.form['weight']
         selected_ingredients = request.form.getlist('ingredients')
-        image = request.files.get('image')  # Obtén la imagen del formulario
+        image = request.files.get('image')
 
         if not author_id:
             return render_template("login.html", error="Inicia la sessió per afegir una recepta")
         
         try:
             with sclient.cursor() as cursor:
-                # Inserta la receta en MySQL
+        
                 sql = """
                     INSERT INTO receptes (titol, tipus, pasos, autor_id)
                     VALUES (%s, %s, %s, %s)
@@ -117,7 +116,6 @@ def newrecipe():
                 cursor.execute(sql, (name, recipe_type, steps, author_id))
                 recipe_id = cursor.lastrowid
 
-                # Inserta los ingredientes en la tabla intermedia
                 many_to_many = """
                     INSERT INTO recepta_ingredients (recepta_id, ingredient_id, pes)
                     VALUES (%s, %s, %s)
@@ -125,12 +123,10 @@ def newrecipe():
                 for ingredient_id in selected_ingredients:
                     cursor.execute(many_to_many, (recipe_id, ingredient_id, weight))
 
-                # Guarda la imagen en GridFS si existe
                 if image and image.filename != "":
                     filename = secure_filename(image.filename)
                     file_id = fs.put(image, filename=filename, content_type=image.content_type)
 
-                    # Guarda la referencia de la imagen en MongoDB
                     mongo_db["receptes_images"].insert_one({
                         "recepta_id": recipe_id,
                         "image_id": file_id
@@ -142,16 +138,17 @@ def newrecipe():
             sclient.rollback()
             return f"Error al crear la recepta: {str(e)}"
 
-#MongoDB
-
 @app.route("/index", methods=['GET', 'POST'])
 def index():
     if 'id' not in session:
         return redirect('/login')
 
     try:
+
+        user_name = session.get('name')
+
         with sclient.cursor() as cursor:
-            # Consulta para obtener las recetas, incluyendo el autor_id
+
             sql = """
                 SELECT receptes.id, receptes.titol, receptes.tipus, receptes.pasos, usuaris.nom, receptes.autor_id
                 FROM receptes 
@@ -160,7 +157,6 @@ def index():
             cursor.execute(sql)
             recipes = cursor.fetchall()
 
-            # Consulta para obtener los ingredientes
             sql2 = """
                 SELECT ri.recepta_id, i.nom, ri.pes
                 FROM recepta_ingredients ri
@@ -169,18 +165,11 @@ def index():
             cursor.execute(sql2)
             ingredients = cursor.fetchall()
 
-        # Conexión a MongoDB
-        mongo_db = mclient["MyEat"]
-        mongo_collection = mongo_db["comentaris"]
-        ratings_collection = mongo_db["ratings"]
-        images_collection = mongo_db["receptes_images"]
-
-        # Si es una solicitud POST, guarda el comentario en MongoDB
         if request.method == 'POST':
             recepta_id = request.form.get("recepta_id")
             text = request.form.get("text")
-            usuari = session.get("name")  # Nombre del usuario desde la sesión
-            data_actual = datetime.now().strftime("%Y-%m-%d")  # Fecha actual
+            usuari = session.get("name")  
+            data_actual = datetime.now().strftime("%Y-%m-%d")  
 
             if recepta_id and text:
                 recepta = mongo_collection.find_one({"recepta_id": int(recepta_id)})
@@ -195,12 +184,10 @@ def index():
                         "comentaris": [{"usuari": usuari, "text": text, "data": data_actual}]
                     })
 
-        # Obtén los comentarios, puntuaciones e imágenes desde MongoDB
         comments = list(mongo_collection.find())
         ratings = list(ratings_collection.find())
         images = list(images_collection.find())
 
-        # Combina las recetas con sus ingredientes, comentarios, puntuaciones e imágenes
         recipes_with_details = []
         for recipe in recipes:
             recipe_id = recipe[0]
@@ -217,9 +204,9 @@ def index():
 
             user_id = session['id']
             user_has_rated = any(r["user_id"] == user_id for r in recipe_ratings)
-            # Calcula la puntuació mitjana
+
             if recipe_ratings:
-                # Extreu només els valors de "rating" dels diccionaris
+
                 ratings_values = [r["rating"] for r in recipe_ratings]
                 average_rating = round(sum(ratings_values) / len(ratings_values), 2)
             else:
@@ -239,7 +226,7 @@ def index():
                 "user_has_rated": user_has_rated
             })
 
-        return render_template("index.html", recipes=recipes_with_details)
+        return render_template("index.html", recipes=recipes_with_details, user_name=user_name)
 
     except Exception as e:
         return f"Error al carregar {str(e)}"
@@ -251,7 +238,7 @@ def edit_recipe(recipe_id):
 
     try:
         with sclient.cursor() as cursor:
-            # Verifica si el usuario es el creador de la receta
+
             sql = "SELECT autor_id FROM receptes WHERE id = %s"
             cursor.execute(sql, (recipe_id,))
             result = cursor.fetchone()
@@ -260,7 +247,7 @@ def edit_recipe(recipe_id):
                 return "No tens permís per editar aquesta recepta", 403
 
             if request.method == 'GET':
-                # Obtén los datos actuales de la receta
+
                 sql = """
                     SELECT titol, tipus, pasos 
                     FROM receptes 
@@ -269,7 +256,6 @@ def edit_recipe(recipe_id):
                 cursor.execute(sql, (recipe_id,))
                 recipe = cursor.fetchone()
 
-                # Obtén los ingredientes actuales
                 sql2 = """
                     SELECT i.id, i.nom, ri.pes 
                     FROM recepta_ingredients ri
@@ -282,12 +268,11 @@ def edit_recipe(recipe_id):
                 return render_template("edit_recipe.html", recipe=recipe, ingredients=ingredients)
 
             elif request.method == 'POST':
-                # Actualiza la receta en MySQL
                 title = request.form['title']
                 steps = request.form['steps']
                 recipe_type = request.form['type']
                 changes = request.form['changes']
-                image = request.files.get('image')  # Obtén la imagen del formulario
+                image = request.files.get('image')
 
                 sql = """
                     UPDATE receptes 
@@ -296,19 +281,16 @@ def edit_recipe(recipe_id):
                 """
                 cursor.execute(sql, (title, recipe_type, steps, recipe_id))
 
-                # Guarda la imagen en GridFS si existe
                 if image and image.filename != "":
                     filename = secure_filename(image.filename)
                     file_id = fs.put(image, filename=filename, content_type=image.content_type)
-
-                    # Actualiza la referencia de la imagen en MongoDB
+                    
                     mongo_db["receptes_images"].update_one(
                         {"recepta_id": recipe_id},
                         {"$set": {"image_id": file_id}},
                         upsert=True
                     )
-
-                # Guarda el histórico de cambios en MongoDB
+                
                 mongo_db["modificacions"].update_one(
                     {"recepta_id": recipe_id},
                     {"$push": {"modificacions": {
@@ -341,32 +323,34 @@ def delete_recipe(recipe_id):
 
     try:
         with sclient.cursor() as cursor:
-            # Verifica si el usuario es el creador de la receta
-            sql = "SELECT autor_id FROM receptes WHERE id = %s"
+
+            sql = """
+                SELECT autor_id FROM receptes WHERE id = %s
+                """
+            
             cursor.execute(sql, (recipe_id,))
             result = cursor.fetchone()
 
             if not result or result[0] != session['id']:
                 return "No tens permís per eliminar aquesta recepta", 403
-
-            # Elimina los ingredientes relacionados de la tabla intermedia
-            sql_delete_ingredients = "DELETE FROM recepta_ingredients WHERE recepta_id = %s"
+            
+            sql_delete_ingredients = """
+            DELETE FROM recepta_ingredients WHERE recepta_id = %s
+            """
             cursor.execute(sql_delete_ingredients, (recipe_id,))
 
-            # Elimina la receta de MySQL
-            sql_delete_recipe = "DELETE FROM receptes WHERE id = %s"
+            sql_delete_recipe = """
+                DELETE FROM receptes WHERE id = %s
+                """
             cursor.execute(sql_delete_recipe, (recipe_id,))
 
-            # Elimina los comentarios relacionados de MongoDB
             mongo_db["comentaris"].delete_one({"recepta_id": recipe_id})
 
-            # Elimina la imagen relacionada de MongoDB (GridFS)
             image_doc = mongo_db["receptes_images"].find_one({"recepta_id": recipe_id})
             if image_doc:
-                fs.delete(image_doc["image_id"])  # Elimina la imagen de GridFS
+                fs.delete(image_doc["image_id"]) 
                 mongo_db["receptes_images"].delete_one({"recepta_id": recipe_id})
 
-            # Elimina el histórico de cambios de MongoDB
             mongo_db["modificacions"].delete_one({"recepta_id": recipe_id})
 
             sclient.commit()
@@ -382,13 +366,13 @@ def rate_recipe(recipe_id):
         return redirect('/login')
 
     user_id = session['id']
-    rating = int(request.form.get("rating"))  # Obté la puntuació del formulari
+    rating = int(request.form.get("rating"))  
 
     try:
-        # Conexió a la col·lecció de puntuacions
+        
         ratings_collection = mongo_db["ratings"]
 
-        # Verifica si l'usuari ja ha puntuat aquesta recepta
+        
         existing_rating = ratings_collection.find_one({
             "recepta_id": recipe_id,
             "ratings.user_id": user_id
@@ -396,7 +380,7 @@ def rate_recipe(recipe_id):
 
         if existing_rating:
             return redirect("/index")
-        # Si no ha puntuat, afegeix la puntuació
+        
         ratings_collection.update_one(
             {"recepta_id": recipe_id},
             {"$push": {"ratings": {"user_id": user_id, "rating": rating}}},

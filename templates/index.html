@@ -3,7 +3,9 @@
 {% block title %} Inici {% endblock%}
 
 {% block content %}
-    <main>
+    <main style="text-align: center;">
+        <label for="ususari">Usuari:</label>
+        <p id="usuari">{{ user_name}}</p>
         {% for recipe in recipes %}
         <div class="recipe">
             <h1>{{ recipe.title }}</h1>

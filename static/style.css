@@ -91,11 +91,6 @@ footer p{
     color: white;
 }
 
-.log_sign_form button:hover{
-    background-color: black; 
-    color: white;
-}
-
 .recipe {
     display: flex;
     flex-direction: column; 

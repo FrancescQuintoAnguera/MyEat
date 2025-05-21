@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "baseforms.html" %}
 
 {% block title %} Registrar-me {% endblock%}
 
@@ -17,10 +17,10 @@
                 <img src="/static/images/password.png" alt="">
                 <input type="text" name="password" placeholder="Contrasenya" required><br><br>
 
-                <input type="submit" value="Registrar">
+                <input id="button" type="submit" value="Registrar">
             </form>
             <div>
-                <button onclick="window.location.href='/'">Iniciar Sessió</button>
+                <button id="button" onclick="window.location.href='/'">Iniciar Sessió</button>
             </div>
         </div>
     </main>

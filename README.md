@@ -1,4 +1,5 @@
-# MyEat
-Esto es un repositorio para una aplicación web que estoy diseñado en clase. 
+# MyEat 👨‍🍳
 
-![alt text](image.png)
+_MyEat es el gestor de receptes de cuina per exel·lencia, ja que es cómode i fàcil d'utilitzar.
+
+## Organització del treball
