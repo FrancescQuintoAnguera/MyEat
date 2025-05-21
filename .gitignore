@@ -5,6 +5,7 @@ lib/
 lib64/
 __pycache__/
 include/
+.vscode/
 
 # Ignored archives
 pyvenv.cfg
